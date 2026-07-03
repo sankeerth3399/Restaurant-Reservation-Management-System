@@ -3,8 +3,8 @@ import path from 'path';
 import { createServer as createViteServer } from 'vite';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import { readDb, writeDb } from './server/db.js';
-import { User, Table, Reservation, TIME_SLOTS } from './src/types.js';
+import { readDb, writeDb } from './server/db';
+import { User, Table, Reservation, TIME_SLOTS } from './src/types';
 
 // Setup environment variables
 import dotenv from 'dotenv';
@@ -55,6 +55,49 @@ app.use(express.json());
   };
 
   // --- API Routes ---
+
+  // Diagnostics check for Vercel Serverless environment
+  app.get('/api/diagnostics', async (req: Request, res: Response) => {
+    try {
+      const checks: any = {};
+      checks.nodeVersion = process.version;
+      checks.cwd = process.cwd();
+      checks.env = {
+        VERCEL: process.env.VERCEL,
+        NODE_ENV: process.env.NODE_ENV,
+        JWT_SECRET_SET: !!process.env.JWT_SECRET,
+      };
+
+      // Test DB Read
+      try {
+        const db = await readDb();
+        checks.dbRead = 'success';
+        checks.usersCount = db.users?.length;
+        checks.tablesCount = db.tables?.length;
+        checks.reservationsCount = db.reservations?.length;
+      } catch (dbErr: any) {
+        checks.dbRead = 'failed';
+        checks.dbReadError = dbErr.message || dbErr;
+        checks.dbReadStack = dbErr.stack || '';
+      }
+
+      // Test bcrypt
+      try {
+        const salt = await bcrypt.genSalt(10);
+        const hash = await bcrypt.hash('test', salt);
+        const match = await bcrypt.compare('test', hash);
+        checks.bcrypt = match ? 'success' : 'failed-match';
+      } catch (bcryptErr: any) {
+        checks.bcrypt = 'failed';
+        checks.bcryptError = bcryptErr.message || bcryptErr;
+        checks.bcryptStack = bcryptErr.stack || '';
+      }
+
+      res.json(checks);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message || err, stack: err.stack || '' });
+    }
+  });
 
   // Auth: Register (Customers only)
   app.post('/api/auth/register', async (req: Request, res: Response) => {

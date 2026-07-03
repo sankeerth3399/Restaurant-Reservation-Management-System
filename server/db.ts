@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import bcrypt from 'bcryptjs';
-import { User, Table, Reservation } from '../src/types.js'; // Use .js for ES Module resolution or bundle-time resolve
+import { User, Table, Reservation } from '../src/types'; // Extensionless import compatible with bundlers
 
 const DB_DIR = process.env.VERCEL 
   ? '/tmp' 
