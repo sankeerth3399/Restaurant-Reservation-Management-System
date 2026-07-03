@@ -559,21 +559,23 @@ app.use(express.json());
 
   // --- Vite & Frontend Middleware setup ---
 
-  if (process.env.NODE_ENV !== "production") {
-    (async () => {
-      const { createServer: createViteServer } = await import('vite');
-      const vite = await createViteServer({
-        server: { middlewareMode: true },
-        appType: "spa",
+  if (!process.env.VERCEL) {
+    if (process.env.NODE_ENV !== "production") {
+      (async () => {
+        const { createServer: createViteServer } = await import('vite');
+        const vite = await createViteServer({
+          server: { middlewareMode: true },
+          appType: "spa",
+        });
+        app.use(vite.middlewares);
+      })();
+    } else {
+      const distPath = path.join(process.cwd(), 'dist');
+      app.use(express.static(distPath));
+      app.get('*', (req, res) => {
+        res.sendFile(path.join(distPath, 'index.html'));
       });
-      app.use(vite.middlewares);
-    })();
-  } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
+    }
   }
 
   if (!process.env.VERCEL) {
