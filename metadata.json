@@ -1,0 +1,6 @@
+{
+  "name": "Restaurant Reservation Management System",
+  "description": "A full-stack restaurant reservation system with role-based access control, conflict prevention, table capacity validation, and interactive customer and admin dashboards.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
