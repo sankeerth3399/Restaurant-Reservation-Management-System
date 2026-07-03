@@ -98,9 +98,11 @@ app.use(express.json());
         token,
         user: { id: newUser.id, email: newUser.email, name: newUser.name, role: newUser.role }
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration error:', error);
-      res.status(500).json({ message: 'An internal server error occurred during registration.' });
+      res.status(500).json({ 
+        message: `Registration error: ${error?.message || error}. Stack: ${error?.stack || ''}` 
+      });
     }
   });
 
@@ -138,9 +140,11 @@ app.use(express.json());
         token,
         user: { id: user.id, email: user.email, name: user.name, role: user.role }
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
-      res.status(500).json({ message: 'An internal server error occurred during login.' });
+      res.status(500).json({ 
+        message: `Login error: ${error?.message || error}. Stack: ${error?.stack || ''}` 
+      });
     }
   });
 
